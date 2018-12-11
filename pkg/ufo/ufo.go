@@ -394,7 +394,12 @@ func (u *UFO) IsTaskRunning(cluster *string, task *string) error {
 
 // ECRLogin uses an AWS region & profile to login to ECR
 func (u *UFO) ECRLogin() error {
-	cmd := fmt.Sprintf("$(aws ecr get-login --no-include-email --region %s --profile %s)", u.Config.Region, u.Config.Profile)
+	var cmd string
+	if u.Config.Profile == "environment-variables" {
+		cmd = fmt.Sprintf("$(aws ecr get-login --no-include-email --region %s)", u.Config.Region)
+	} else {
+		cmd = fmt.Sprintf("$(aws ecr get-login --no-include-email --region %s --profile %s)", u.Config.Region, u.Config.Profile)
+	}
 	getLogin := exec.Command("bash", "-c", cmd)
 
 	if err := term.PrintStdout(getLogin); err != nil {
