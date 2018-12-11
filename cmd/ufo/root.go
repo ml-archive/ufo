@@ -20,6 +20,7 @@ var (
 	flagCluster    string
 	flagService    string
 	flagConfigName string
+	flagTimeout	   int
 )
 
 // RootCmd represents the base command when called
@@ -48,6 +49,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&flagCluster, "cluster", "c", "", "AWS ECS Cluster")
 	rootCmd.PersistentFlags().StringVarP(&flagService, "service", "s", "", "Service in an ECS cluster")
 	rootCmd.PersistentFlags().StringVar(&flagConfigName, "config", "config", "ufo config name")
+	rootCmd.PersistentFlags().IntVarP(&flagTimeout, "timeout", "t", 5, "Deployment Timeout Time")
 }
 
 func loadConfig() {

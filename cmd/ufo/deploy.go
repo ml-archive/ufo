@@ -20,10 +20,10 @@ var deployCmd = &cobra.Command{
 }
 
 func runDeploy(cmd *cobra.Command, args []string) error {
-	return deploy(flagCluster)
+	return deploy(flagCluster, flagTimeout)
 }
 
-func deploy(clusterName string) error {
+func deploy(clusterName string, timeout int) error {
 	ufo := UFO.New(awsConfig)
 
 	commit, err := git.GetCommit()
@@ -95,7 +95,7 @@ func deploy(clusterName string) error {
 		select {
 		case detail := <-doneCh:
 			fmt.Printf("Service %s (%s) is now running \n", *detail.Service.ServiceName, detail.TaskDefinitionFamily())
-		case <-time.After(time.Minute * 5):
+		case <-time.After(time.Minute * time.Duration(timeout)):
 			return ErrDeployTimeout
 		}
 	}
