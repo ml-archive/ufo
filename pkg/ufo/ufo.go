@@ -2,6 +2,7 @@ package ufo
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"regexp"
 	"strings"
@@ -395,7 +396,7 @@ func (u *UFO) IsTaskRunning(cluster *string, task *string) error {
 // ECRLogin uses an AWS region & profile to login to ECR
 func (u *UFO) ECRLogin() error {
 	var cmd string
-	if u.Config.Profile == "environment-variables" {
+	if os.Getenv("AWS_ACCESS_KEY_ID") != "" && os.Getenv("AWS_SECRET_ACCESS_KEY") != "" {
 		cmd = fmt.Sprintf("$(aws ecr get-login --no-include-email --region %s)", u.Config.Region)
 	} else {
 		cmd = fmt.Sprintf("$(aws ecr get-login --no-include-email --region %s --profile %s)", u.Config.Region, u.Config.Profile)
