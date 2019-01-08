@@ -39,24 +39,75 @@ func listInfo(cmd *cobra.Command, args []string) {
 	handleError(err)
 
 	printServiceInfoTable(t)
+
+	fmt.Printf("\n")
+
+	runningTasks, err := ufo.RunningTasks(c, s)
+
+	handleError(err)
+
+	tasks, err := ufo.GetTasks(c, runningTasks)
+
+	handleError(err)
+
+	printRunningTaskTable(tasks)
 }
 
 func printServiceInfoTable(t *ecs.TaskDefinition) {
+	longestName := 20
+	longestValue := 100
+	nameDashes := strings.Repeat("-", longestName+2) // Adding two because of the table padding
+	valueDashes := strings.Repeat("-", longestValue+2)
+	fmt.Printf("Active Task\n")
+	fmt.Printf("+%s+%s+\n", nameDashes, valueDashes)
+
 	for _, containerDefinition := range t.ContainerDefinitions {
-		longestName := len("Image")
-		longestValue := len(*containerDefinition.Image)
-		nameDashes := strings.Repeat("-", longestName+2) // Adding two because of the table padding
-		valueDashes := strings.Repeat("-", longestValue+2)
-
+		imageName := "Image"
+		imageValue := *containerDefinition.Image
+		imageNameSpaces := longestName - len(imageName)
+		imageValueSpaces := longestValue - len(imageValue)
+		imageSpacesForName := strings.Repeat(" ", imageNameSpaces)
+		imageSpacesForValue := strings.Repeat(" ", imageValueSpaces)
+		fmt.Printf("| %s%s | %s%s |\n", imageName, imageSpacesForName, imageValue, imageSpacesForValue)
 		fmt.Printf("+%s+%s+\n", nameDashes, valueDashes)
+	}
 
-		name := "Image"
-		value := *containerDefinition.Image
-		nameSpaces := longestName - len(name)
-		valueSpaces := longestValue - len(value)
-		spacesForName := strings.Repeat(" ", nameSpaces)
-		spacesForValue := strings.Repeat(" ", valueSpaces)
-		fmt.Printf("| %s%s | %s%s |\n", name, spacesForName, value, spacesForValue)
+	revisionName := "Revision"
+	revisionValue := string(*t.TaskDefinitionArn)
+	revisionNameSpaces := longestName - len(revisionName)
+	revisionValueSpaces := longestValue - len(revisionValue)
+	revisionSpacesForName := strings.Repeat(" ", revisionNameSpaces)
+	revisionSpacesForValue := strings.Repeat(" ", revisionValueSpaces)
+	fmt.Printf("| %s%s | %s%s |\n", revisionName, revisionSpacesForName, revisionValue, revisionSpacesForValue)
+	fmt.Printf("+%s+%s+\n", nameDashes, valueDashes)
+
+	statusName := "Status"
+	statusValue := *t.Status
+	statusNameSpaces := longestName - len(statusName)
+	statusValueSpaces := longestValue - len(statusValue)
+	statusSpacesForName := strings.Repeat(" ", statusNameSpaces)
+	statusSpacesForValue := strings.Repeat(" ", statusValueSpaces)
+	fmt.Printf("| %s%s | %s%s |\n", statusName, statusSpacesForName, statusValue, statusSpacesForValue)
+	fmt.Printf("+%s+%s+\n", nameDashes, valueDashes)
+}
+
+func printRunningTaskTable(tasks []*ecs.Task) {
+
+	longestName := 20
+	longestValue := 100
+	nameDashes := strings.Repeat("-", longestName+2) // Adding two because of the table padding
+	valueDashes := strings.Repeat("-", longestValue+2)
+	fmt.Printf("Running Tasks\n")
+	fmt.Printf("+%s+%s+\n", nameDashes, valueDashes)
+
+	for _, task := range tasks {
+		imageName := "Task Definition"
+		imageValue := *task.TaskDefinitionArn
+		imageNameSpaces := longestName - len(imageName)
+		imageValueSpaces := longestValue - len(imageValue)
+		imageSpacesForName := strings.Repeat(" ", imageNameSpaces)
+		imageSpacesForValue := strings.Repeat(" ", imageValueSpaces)
+		fmt.Printf("| %s%s | %s%s |\n", imageName, imageSpacesForName, imageValue, imageSpacesForValue)
 		fmt.Printf("+%s+%s+\n", nameDashes, valueDashes)
 	}
 }
