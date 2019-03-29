@@ -83,6 +83,14 @@ Create a deployment
 
 A cluster must be specified via the --cluster flag. The --verbose flag can be input to enable verbose output. The --login flag can be input to login to AWS ECR.
 
+Docker build arguments
+
+UFO can use `--docker-arg` to pass arguments during the docker build phase. Multiple build arguments can be passed, see example below.
+
+```console
+ufo deploy --cluster dev --build-arg NODE_ENV=dev --build-arg CAT=lazy
+```
+
 #### Services
 
 Services manage long-lived instances of your containers that are run on AWS
