@@ -10,6 +10,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var buildArgs []string
+
 var deployCmd = &cobra.Command{
 	Use:   "deploy",
 	Short: "Create a deployment",
@@ -36,10 +38,14 @@ func deploy(clusterName string, timeout int) error {
 		return err
 	}
 
+	configBuildArgs := cfg.getBuildArgs(clusterName)
+
 	deployment := &UFO.Deployment{}
 	deployment.SetCommitHash(commit)
 	deployment.SetRepo(cfg.Repo)
 	deployment.SetDockerfile(cluster.Dockerfile)
+	deployment.SetBuildArgs(buildArgs)
+	deployment.SetConfigBuildArgs(configBuildArgs)
 
 	// Build Docker image and push to repo
 	err = ufo.LoginBuildPushImage(deployment.BuildDetail)
@@ -105,4 +111,5 @@ func deploy(clusterName string, timeout int) error {
 
 func init() {
 	rootCmd.AddCommand(deployCmd)
+	deployCmd.Flags().StringSliceVarP(&buildArgs, "build-arg", "b", []string{}, "Set build-time variables")
 }

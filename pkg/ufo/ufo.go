@@ -18,8 +18,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/ecr/ecriface"
 	"github.com/aws/aws-sdk-go/service/ecs"
 	"github.com/aws/aws-sdk-go/service/ecs/ecsiface"
-	"github.com/pkg/errors"
 	"github.com/fuzz-productions/ufo/pkg/term"
+	"github.com/pkg/errors"
 )
 
 type AwsConfig struct {
