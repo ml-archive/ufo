@@ -38,11 +38,14 @@ func deploy(clusterName string, timeout int) error {
 		return err
 	}
 
+	configBuildArgs := cfg.getBuildArgs(clusterName)
+
 	deployment := &UFO.Deployment{}
 	deployment.SetCommitHash(commit)
 	deployment.SetRepo(cfg.Repo)
 	deployment.SetDockerfile(cluster.Dockerfile)
 	deployment.SetBuildArgs(buildArgs)
+	deployment.SetConfigBuildArgs(configBuildArgs)
 
 	// Build Docker image and push to repo
 	err = ufo.LoginBuildPushImage(deployment.BuildDetail)

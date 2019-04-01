@@ -25,10 +25,11 @@ type DeployDetail struct {
 }
 
 type BuildDetail struct {
-	Repo       string
-	CommitHash string
-	Dockerfile string
-	buildArgs  []string
+	Repo            string
+	CommitHash      string
+	Dockerfile      string
+	buildArgs       []string
+	configBuildArgs []string
 }
 
 func (d *DeployDetail) SetCluster(cluster *ecs.Cluster) {
@@ -61,6 +62,10 @@ func (d *Deployment) SetDockerfile(dockerfile string) {
 
 func (d *Deployment) SetBuildArgs(buildArgs []string) {
 	d.BuildDetail.buildArgs = buildArgs
+}
+
+func (d *Deployment) SetConfigBuildArgs(configBuildArgs []string) {
+	d.BuildDetail.configBuildArgs = configBuildArgs
 }
 
 func (d *Deployment) TaskDefinitions() string {
@@ -141,7 +146,7 @@ func (u *UFO) LoginBuildPushImage(info BuildDetail) error {
 		return err
 	}
 
-	err = docker.ImageBuild(info.Repo, info.CommitHash, info.Dockerfile, info.buildArgs)
+	err = docker.ImageBuild(info.Repo, info.CommitHash, info.Dockerfile, info.buildArgs, info.configBuildArgs)
 
 	if err != nil {
 		return err

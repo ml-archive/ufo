@@ -85,10 +85,34 @@ A cluster must be specified via the --cluster flag. The --verbose flag can be in
 
 Docker build arguments
 
-UFO can use `--docker-arg` to pass arguments during the docker build phase. Multiple build arguments can be passed, see example below.
+UFO can use `--build-arg` or `-b` to pass arguments during the docker build phase. Multiple build arguments can be passed, see example below.
 
 ```console
 ufo deploy --cluster dev --build-arg NODE_ENV=dev --build-arg CAT=lazy
+```
+
+Docker build arguments can also be passed though the `.ufo/config.json` and coexist with the `--build-arg` command option.
+
+```json
+{
+	"profile": "default",
+	"region": "us-east-1",
+	"repo": "default.dkr.ecr.us-west-1.amazonaws.com/default",
+	"clusters": [
+		{
+			"name": "dev",
+			"services": ["api"],
+			"dockerfile": "Dockerfile",
+			"build-args": ["NODE_ENV=dev", "CAT=lazy"]
+		}
+	],
+	"tasks": [
+		{
+			"name": "migrate",
+			"command": "php artisan migrate"
+		}
+	]
+}
 ```
 
 #### Services
