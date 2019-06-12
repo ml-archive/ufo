@@ -145,6 +145,8 @@ func (u *UFO) GetService(c *ecs.Cluster, service string) (*ecs.Service, error) {
 	return res.Services[0], nil
 }
 
+// GetTaskDefinition returns details of a task definition in
+// a cluster and service by service's current task definition
 func (u *UFO) GetTaskDefinition(c *ecs.Cluster, s *ecs.Service) (*ecs.TaskDefinition, error) {
 	result, err := u.ECS.DescribeTaskDefinition(&ecs.DescribeTaskDefinitionInput{
 		TaskDefinition: s.TaskDefinition,
@@ -272,7 +274,7 @@ func (u *UFO) RegisterTaskDefinitionWithEnvVars(t *ecs.TaskDefinition) (*ecs.Tas
 	return result.TaskDefinition, nil
 }
 
-// UpdateTaskDefinitionImage copies a task definition and update its image tag
+// RollbackTaskDefinition updates the task definition to the desired revision number
 func (u *UFO) RollbackTaskDefinition(c *ecs.Cluster, s *ecs.Service, t *ecs.TaskDefinition, n int) (string, error) {
 
 	var taskFamilyRevision string
@@ -323,6 +325,7 @@ func (u *UFO) GetRepoFromImage(image *string) string {
 	return repo
 }
 
+// RollbackService updates the ECS service with the desired rollback revision
 func (u *UFO) RollbackService(c *ecs.Cluster, s *ecs.Service, t string) (*ecs.UpdateServiceOutput, error) {
 	result, err := u.ECS.UpdateService(&ecs.UpdateServiceInput{
 		Cluster:        c.ClusterArn,
