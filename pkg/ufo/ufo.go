@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -273,6 +274,35 @@ func (u *UFO) RegisterTaskDefinitionWithEnvVars(t *ecs.TaskDefinition) (*ecs.Tas
 	return result.TaskDefinition, nil
 }
 
+// RollbackTaskDefinition updates the task definition to the desired revision number
+func (u *UFO) RollbackTaskDefinition(c *ecs.Cluster, s *ecs.Service, t *ecs.TaskDefinition, n int) (string, error) {
+
+	var taskFamilyRevision string
+
+	r := regexp.MustCompile(`([^\/]+)$`)
+	x := regexp.MustCompile(`([^\/]+)`)
+
+	currentTaskDefinitionArn := *t.TaskDefinitionArn
+	currentTaskDefinitionFamilyRevision := r.FindString(currentTaskDefinitionArn)
+	currentTaskDefinitionArnName := x.FindString(currentTaskDefinitionArn)
+	split := strings.Split(currentTaskDefinitionFamilyRevision, ":")
+	taskFamily, taskRevision := split[0], split[1]
+
+	if n != 0 {
+		taskFamilyRevision = strings.Join([]string{taskFamily, ":", strconv.Itoa(n)}, "")
+	} else {
+		i, _ := strconv.Atoi(taskRevision)
+		i--
+		taskFamilyRevision = strings.Join([]string{taskFamily, ":", strconv.Itoa(i)}, "")
+	}
+
+	taskFamilyRevisionArn := currentTaskDefinitionArnName + "/" + taskFamilyRevision
+	*t.TaskDefinitionArn = taskFamilyRevisionArn
+	_, err := u.RollbackService(c, s, taskFamilyRevision)
+
+	return taskFamilyRevision, err
+}
+
 // UpdateTaskDefinitionImage copies a task definition and update its image tag
 func (u *UFO) UpdateTaskDefinitionImage(t ecs.TaskDefinition, tag string) ecs.TaskDefinition {
 	r := regexp.MustCompile(`(\S+):`)
@@ -293,6 +323,21 @@ func (u *UFO) GetRepoFromImage(image *string) string {
 	repo := r.FindStringSubmatch(*image)[1]
 
 	return repo
+}
+
+// RollbackService updates the ECS service with the desired rollback revision
+func (u *UFO) RollbackService(c *ecs.Cluster, s *ecs.Service, t string) (*ecs.UpdateServiceOutput, error) {
+	result, err := u.ECS.UpdateService(&ecs.UpdateServiceInput{
+		Cluster:        c.ClusterArn,
+		Service:        s.ServiceArn,
+		TaskDefinition: aws.String(t),
+	})
+
+	if err != nil {
+		return nil, errors.Wrap(err, errCouldNotUpdateService)
+	}
+
+	return result, nil
 }
 
 // UpdateService updates a service in a cluster with a new task definition
