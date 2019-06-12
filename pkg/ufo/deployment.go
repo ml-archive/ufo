@@ -18,10 +18,12 @@ type Deployment struct {
 }
 
 type DeployDetail struct {
-	Cluster        *ecs.Cluster
-	Service        *ecs.Service
-	TaskDefinition *ecs.TaskDefinition
-	Done           bool
+	Cluster                  *ecs.Cluster
+	Service                  *ecs.Service
+	TaskDefinition           *ecs.TaskDefinition
+	TaskDefinitionFamilyName string
+	RevisionNumber           int
+	Done                     bool
 }
 
 type BuildDetail struct {
@@ -46,6 +48,14 @@ func (d *DeployDetail) SetTaskDefinition(taskDef *ecs.TaskDefinition) {
 
 func (d *DeployDetail) SetDone(done bool) {
 	d.Done = done
+}
+
+func (d *DeployDetail) SetTaskDefinitionFamilyName(TaskDefinitionFamilyName string) {
+	d.TaskDefinitionFamilyName = TaskDefinitionFamilyName
+}
+
+func (d *DeployDetail) SetRevisionNumber(revisionNumber int) {
+	d.RevisionNumber = revisionNumber
 }
 
 func (d *Deployment) SetRepo(repo string) {
@@ -110,6 +120,30 @@ func (u *UFO) AwaitServicesRunning(deployment *Deployment) chan *DeployDetail {
 	}
 
 	return doneCh
+}
+
+func (u *UFO) RollbackAll(deploy *Deployment, deployDetail *DeployDetail) <-chan error {
+	var wg sync.WaitGroup
+	errCh := make(chan error)
+
+	wg.Add(len(deploy.DeployDetails))
+	for _, detail := range deploy.DeployDetails {
+		go func(detail *DeployDetail) {
+			taskDefName, err := u.RollbackTaskDefinition(detail.Cluster, detail.Service, detail.TaskDefinition, deployDetail.RevisionNumber)
+
+			if err != nil {
+				errCh <- err
+				wg.Done()
+			}
+			detail.SetTaskDefinitionFamilyName(taskDefName)
+
+			wg.Done()
+		}(detail)
+	}
+
+	wg.Wait()
+	close(errCh)
+	return errCh
 }
 
 func (u *UFO) DeployAll(deploy *Deployment) <-chan error {
