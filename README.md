@@ -53,6 +53,7 @@ UFO will relies on this config to run its operations.
 * ufo deploy
 * ufo service
 * ufo task
+* ufo rollback
 
 #### Global Flags
 
@@ -179,3 +180,19 @@ You must specify a cluster, service, and command to run. The command will use th
 There is also an option of creating command aliases in `.ufo/config.json`. Once a command alias is in the ufo config, specifying that alias via the --command flag will run the configured command.
 
 If the awslogs driver is configured for the service in which you base your task. Logs for that task will be sent to cloudwatch under the same log group and prefix as described in the task definition.
+
+##### ufo rollback
+
+The rollback option will update the ECS service revision number to the desired task number. If the need is to rollback to the previous deploy, use:
+
+```console
+ufo rollback --cluster dev
+```
+
+Revision Number
+
+Rollback can use `--revision` or `-r` to pass the revision number that is desired for the ECS service to run:
+
+```console
+ufo rollback --cluster dev --revision 123
+```
