@@ -159,6 +159,14 @@ ufo service env list
 
 List environment variables
 
+##### ufo service list
+
+```console
+ufo service info --cluster dev --service frontend
+```
+
+To list the status of service on a cluster, in this example: cluster dev, frontend service.
+
 #### Tasks
 
 Tasks are one-time executions of your container. Instances of your task are run
