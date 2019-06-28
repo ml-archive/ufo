@@ -2,9 +2,9 @@
 
 ## Prerequisites
 
-1. Install go
+1. Install [Go](https://golang.org/doc/install)
 
-    `$ brew install go`
+    `brew install go`
 
 2. Setup your GOPATH
 
