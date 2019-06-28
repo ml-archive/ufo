@@ -14,19 +14,17 @@
 
     `export PATH=$GOPATH/bin:$PATH`
 
-4. Install Docker
-	https://docs.docker.com/install/
+4. Install [Docker](https://docs.docker.com/install/)
 
-5. Install AWS CLI
-	https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html
+5. Install [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html)
 
-6. Create an AWS access key
-	https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html#Using_CreateAccessKey
+6. Create an [AWS access key](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html#Using_CreateAccessKey)
 
 7. Add AWS access key to the file `~/.aws/credentials` to match the profile in the config of UFO `.ufo/config.json`.
-	```[default]
-	    aws_access_key_id = KEYVALUE
-	    aws_secret_access_key = ACCESSKEYVALUE```
+	```
+	[default]
+	aws_access_key_id = KEYVALUE
+	aws_secret_access_key = ACCESSKEYVALUE```
 
 ## Installing UFO
 
