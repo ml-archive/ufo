@@ -24,7 +24,8 @@
 	```
 	[default]
 	aws_access_key_id = KEYVALUE
-	aws_secret_access_key = ACCESSKEYVALUE```
+	aws_secret_access_key = ACCESSKEYVALUE
+	```
 
 ## Installing UFO
 
