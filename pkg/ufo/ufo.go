@@ -37,10 +37,16 @@ type UFO struct {
 
 // New creates a UFO session and connects to AWS to create a session
 func New(awsConfig *AwsConfig) *UFO {
-	sess := session.Must(session.NewSessionWithOptions(session.Options{
-		Config:  aws.Config{Region: aws.String(awsConfig.Region)},
-		Profile: awsConfig.Profile,
-	}))
+	var sess *session.Session
+	if os.Getenv("AWS_ACCESS_KEY_ID") != "" && os.Getenv("AWS_SECRET_ACCESS_KEY") != "" {
+		sess = session.Must(session.NewSessionWithOptions(session.Options{
+			Config:  aws.Config{Region: aws.String(awsConfig.Region)}}))
+	} else {
+		sess = session.Must(session.NewSessionWithOptions(session.Options{
+			Config:  aws.Config{Region: aws.String(awsConfig.Region)},
+			Profile: awsConfig.Profile,
+		}))
+	}
 
 	app := &UFO{
 		Config: awsConfig,
