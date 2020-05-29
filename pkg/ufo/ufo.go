@@ -1,6 +1,7 @@
 package ufo
 
 import (
+	"encoding/base64"
 	"fmt"
 	"os"
 	"os/exec"
@@ -9,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/request"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -19,7 +21,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/ecr/ecriface"
 	"github.com/aws/aws-sdk-go/service/ecs"
 	"github.com/aws/aws-sdk-go/service/ecs/ecsiface"
-	"github.com/fuzz-productions/ufo/pkg/term"
 	"github.com/pkg/errors"
 )
 
@@ -40,7 +41,7 @@ func New(awsConfig *AwsConfig) *UFO {
 	var sess *session.Session
 	if os.Getenv("AWS_ACCESS_KEY_ID") != "" && os.Getenv("AWS_SECRET_ACCESS_KEY") != "" {
 		sess = session.Must(session.NewSessionWithOptions(session.Options{
-			Config:  aws.Config{Region: aws.String(awsConfig.Region)}}))
+			Config: aws.Config{Region: aws.String(awsConfig.Region)}}))
 	} else {
 		sess = session.Must(session.NewSessionWithOptions(session.Options{
 			Config:  aws.Config{Region: aws.String(awsConfig.Region)},
@@ -446,15 +447,45 @@ func (u *UFO) IsTaskRunning(cluster *string, task *string) error {
 
 // ECRLogin uses an AWS region & profile to login to ECR
 func (u *UFO) ECRLogin() error {
-	var cmd string
-	if os.Getenv("AWS_ACCESS_KEY_ID") != "" && os.Getenv("AWS_SECRET_ACCESS_KEY") != "" {
-		cmd = fmt.Sprintf("$(aws ecr get-login --no-include-email --region %s)", u.Config.Region)
-	} else {
-		cmd = fmt.Sprintf("$(aws ecr get-login --no-include-email --region %s --profile %s)", u.Config.Region, u.Config.Profile)
-	}
-	getLogin := exec.Command("bash", "-c", cmd)
+	sess := session.Must(session.NewSessionWithOptions(session.Options{
+		Config:  aws.Config{Region: aws.String(u.Config.Region)},
+		Profile: u.Config.Profile,
+	}))
+	svc := ecr.New(sess)
+	input := &ecr.GetAuthorizationTokenInput{}
 
-	if err := term.PrintStdout(getLogin); err != nil {
+	resp, err := svc.GetAuthorizationToken(input)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case ecr.ErrCodeServerException:
+				fmt.Println(ecr.ErrCodeServerException, aerr.Error())
+			case ecr.ErrCodeInvalidParameterException:
+				fmt.Println(ecr.ErrCodeInvalidParameterException, aerr.Error())
+			default:
+				fmt.Println(aerr.Error())
+			}
+		} else {
+			fmt.Println(aerr.Error())
+		}
+
+	}
+
+	auth := resp.AuthorizationData
+	decode, err := base64.StdEncoding.DecodeString(*auth[0].AuthorizationToken)
+	if err != nil {
+		return err
+	}
+
+	token := strings.SplitN(string(decode), ":", 2)
+	user := token[0]
+	password := token[1]
+	endpoint := *auth[0].ProxyEndpoint
+
+	cmd := fmt.Sprintf("docker login -u %s -p %s %s)", user, password, endpoint)
+	login := exec.Command("bash", "-c", cmd)
+	loginErr := login.Run()
+	if loginErr != nil {
 		return errors.Wrap(err, errECRLogin)
 	}
 
