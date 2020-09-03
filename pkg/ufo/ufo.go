@@ -483,7 +483,6 @@ func (u *UFO) ECRLogin() error {
 	endpoint := *auth[0].ProxyEndpoint
 
 	cmd := fmt.Sprintf("docker login -u %s -p %s %s", user, password, endpoint)
-	fmt.Println("THIS IS THE COMMAND: ", cmd)
 	login := exec.Command("bash", "-c", cmd)
 	loginErr := login.Run()
 	if loginErr != nil {
