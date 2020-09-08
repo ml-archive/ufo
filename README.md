@@ -29,7 +29,11 @@
 
 ## Installing UFO
 
+<<<<<<< HEAD
 1. Install the UFO binary `go get -u github.com/fuzz-productions/ufo`
+=======
+1. Install the UFO binary `go get github.com/fuzz-productions/ufo/...`
+>>>>>>> parent of 5cc9ce2... Update README.md
     * If you have issues pulling a private repository, see https://gist.github.com/shurcooL/6927554
 
 ## Usage
