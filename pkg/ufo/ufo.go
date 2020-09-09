@@ -447,14 +447,9 @@ func (u *UFO) IsTaskRunning(cluster *string, task *string) error {
 
 // ECRLogin uses an AWS region & profile to login to ECR
 func (u *UFO) ECRLogin() error {
-	sess := session.Must(session.NewSessionWithOptions(session.Options{
-		Config:  aws.Config{Region: aws.String(u.Config.Region)},
-		Profile: u.Config.Profile,
-	}))
-	svc := ecr.New(sess)
 	input := &ecr.GetAuthorizationTokenInput{}
 
-	resp, err := svc.GetAuthorizationToken(input)
+	resp, err := u.ECR.GetAuthorizationToken(input)
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
